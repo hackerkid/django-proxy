@@ -14,20 +14,9 @@ class RedirectMiddleware(object):
     specified URL or business.
     """
     def process_request(self, request):
-        """Returns an HTTP redirect response for requests including non-"www"
-        subdomains.
-        """
-        scheme = "http" if not request.is_secure() else "https"
-        path = request.get_full_path()
-        domain = request.META.get('HTTP_HOST') or request.META.get('SERVER_NAME')
-        pieces = domain.split('.')
-        subdomain = ".".join(pieces[:-2]) # join all but primary domain
-        default_domain = "www"
-        if domain in {default_domain, "testserver", "localhost"}:
-            return None
-        try:
-            route = Subdomain.objects.get(name=subdomain).url
-        except Subdomain.DoesNotExist:
-            route = path
-        return HttpResponseRedirect("{0}://{1}{2}".format(
-            scheme, domain, route))
+        """Parse out the subdomain from the request"""
+        request.subdomain = None
+        host = request.META.get('HTTP_HOST', '')
+        host_s = host.replace('www.', '').split('.')
+        if len(host_s) > 2:
+            request.subdomain = ''.join(host_s[:-2])
