@@ -24,7 +24,7 @@ class RedirectMiddleware(object):
         subdomain = ".".join(pieces[:-2]) # join all but primary domain
         default_domain = "www"
         if domain in {default_domain, "testserver", "localhost"}:
-            return HttpResponseForbidden()
+            return None
         try:
             route = Subdomain.objects.get(name=subdomain).url
         except Subdomain.DoesNotExist:
